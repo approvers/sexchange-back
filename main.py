@@ -6,8 +6,6 @@ app = Flask(__name__)
 
 
 dbpath = './sexchange.sqlite'
-connection = sqlite3.connect(dbpath)
-cursor = connection.cursor()
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -15,6 +13,9 @@ def register():
     twitter_id = request.form["twitter_id"]
     password = request.form["password"]
     seiheki = request.form["seiheki"]
+
+    connection = sqlite3.connect(dbpath)
+    cursor = connection.cursor()
 
     cursor.execute(
         "select * from users where twitter_id={};".format(twitter_id)
@@ -24,9 +25,13 @@ def register():
     if res == None:
         cursor.execute(
             "insert into users values (?, {}, {}, {}, {});".format(name, twitter_id, password, seiheki)
-        ) 
+        )
+        connection.commit()
+        connection.close()
         return jsonify({"status": 1})
     else:
+        connection.commit()
+        connection.close()
         return jsonify({"status": 0})
 
 
